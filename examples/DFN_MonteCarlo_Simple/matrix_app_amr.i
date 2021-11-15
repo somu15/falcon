@@ -1,6 +1,16 @@
+value = 0.01
+x_req = 35.869565
+y_req = 25.363613
+z_req = 25.363613
+
+coordinates1 = '${fparse value}'
+coordinates2 = '${fparse x_req}'
+coordinates3 = '${fparse y_req}'
+coordinates4 = '${fparse z_req}'
+
 # 3D matrix app doing thermo-hydro PorousFlow and receiving heat energy via a VectorPostprocessor from the 2D fracture App
 intial_temperature=473
-endTime = 2 #7200   # 3 Months (units in secs)
+endTime = 7.77e6 # 4 #    7200   # 3 Months (units in secs)
 [Mesh]
   uniform_refine = 0
   [generate]
@@ -27,7 +37,7 @@ endTime = 2 #7200   # 3 Months (units in secs)
     scaling = 1E6
   []
   [matrix_T]
-    initial_condition = ${intial_temperature}
+    initial_condition = 473 # ${intial_temperature}
   []
 []
 
@@ -112,9 +122,15 @@ endTime = 2 #7200   # 3 Months (units in secs)
   []
   [Constant]
     type = ConstantReporter
-    real_vector_names  = 'vec_1'
-    # real_vector_values = '0.01 101.705 160.459 39.5722'
-    real_vector_values = '0.01 101.705 160.459 39.5722'
+    real_names  = 'num_1 num_2 num_3 num_4'
+    real_values = '${coordinates1} ${coordinates2} ${coordinates3} ${coordinates4}'
+    # real_vector_names  = 'vec_1'
+    # real_vector_values = '${coordinates1} ${coordinates2} ${coordinates3} ${coordinates4}'
+  []
+  [Jout_Constant]
+    type = ConstantReporter
+    real_names = 'Jout_values'
+    real_values = '0.0'
   []
 []
 
@@ -347,12 +363,18 @@ endTime = 2 #7200   # 3 Months (units in secs)
     from_reporters = 'heat_transfer_rate/joules_per_s heat_transfer_rate/x heat_transfer_rate/y heat_transfer_rate/z'
     to_reporters = 'heat_transfer_rate/transferred_joules_per_s heat_transfer_rate/x heat_transfer_rate/y heat_transfer_rate/z'
   []
-  [line_base]
+  [line_base1]
     type = MultiAppReporterTransfer
     direction = to_multiapp
     multi_app = fracture_app
-    from_reporters = 'Constant/vec_1'
-    to_reporters = 'Constant/vec_2'
-    # to_reporters = 'DiracKernels/withdraw_fluid:output_value DiracKernels/withdraw_fluid:output_value'
+    from_reporters = 'Constant/num_1 Constant/num_2 Constant/num_3 Constant/num_4'
+    to_reporters = 'Constant/num_11 Constant/num_21 Constant/num_31 Constant/num_41'
+  []
+  [Jout_from_fracture]
+    type = MultiAppReporterTransfer
+    direction = from_multiapp
+    multi_app = fracture_app
+    from_reporters = 'J_out/value'
+    to_reporters = 'Jout_Constant/Jout_values'
   []
 []

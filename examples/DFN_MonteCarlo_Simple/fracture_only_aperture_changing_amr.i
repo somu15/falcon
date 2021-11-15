@@ -1,11 +1,21 @@
 # Cold water injection into one side of the fracture network, and production from the other side
 injection_rate = 10 # kg/s
+#
+# value1 = 0.0
+# x_req1 = 0.0
+# y_req1 = 0.0
+# z_req1 = 0.0
+#
+# coordinates11 = '${fparse value1}'
+# coordinates21 = '${fparse x_req1}'
+# coordinates31 = '${fparse y_req1}'
+# coordinates41 = '${fparse z_req1}'
 
 [Mesh]
   uniform_refine = 0
   [cluster34]
     type = FileMeshGenerator
-    file = 'Cluster_34.exo'
+    file = 'Simple.e'
   []
   [injection_node]
     type = BoundingBoxNodeSetGenerator
@@ -109,9 +119,13 @@ injection_rate = 10 # kg/s
 
 [Reporters]
   [Constant]
+    # type = ConstantReporter
+    # real_vector_names  = 'vec_2'
+    # # real_vector_values = '${coordinates11} ${coordinates21} ${coordinates31} ${coordinates41}'
+    # real_vector_values = '0.0 0.0 0.0 0.0'
     type = ConstantReporter
-    real_vector_names  = 'vec_2'
-    real_vector_values = '0.01 101.705 160.459 39.5722'
+    real_names  = 'num_11 num_21 num_31 num_41'
+    real_values = '0.01 35.869565 25.363613 25.363613'
   []
 []
 
@@ -174,7 +188,7 @@ injection_rate = 10 # kg/s
 [BCs]
   [inject_heat]
     type = DirichletBC
-    boundary = injection_node
+    boundary = injection_node # Inject #
     variable = frac_T
     value = 373
   []
@@ -184,7 +198,7 @@ injection_rate = 10 # kg/s
   [inject_fluid]
     type = PorousFlowPointSourceFromPostprocessor
     mass_flux = ${injection_rate}
-    point = '58.8124 0.50384 74.7838'
+    point = '0.0 0.0 0.0'
     variable = frac_P
   []
   [withdraw_fluid]
@@ -193,10 +207,11 @@ injection_rate = 10 # kg/s
     bottom_p_or_t = 10.6 # 1MPa + approx insitu at production point, to prevent aperture closing due to low porepressures
     character = 1
     line_length = 1
-    output_value = Constant/vec_2
-    # output_value = 'output_value'
-    # point_file = production.xyz
-    line_base='0.01 101.705 160.459 39.5722'
+    r_name = 'Constant/num_11'
+    x_coord_name = 'Constant/num_21'
+    y_coord_name = 'Constant/num_31'
+    z_coord_name = 'Constant/num_41'
+    line_base='0.01 35.869565 25.363613 25.363613'
     unit_weight = '0 0 0'
     fluid_phase = 0
     use_mobility = true
@@ -208,10 +223,14 @@ injection_rate = 10 # kg/s
     bottom_p_or_t = 10.6 # 1MPa + approx insitu at production point, to prevent aperture closing due to low porepressures
     character = 1
     line_length = 1
-    output_value = Constant/vec_2
-    # output_value = 'output_value'
+    r_name = 'Constant/num_11'
+    x_coord_name = 'Constant/num_21'
+    y_coord_name = 'Constant/num_31'
+    z_coord_name = 'Constant/num_41'
+    # output_value = Constant/vec_2
     # point_file = production.xyz
-    line_base='0.01 101.705 160.459 39.5722'
+    # r_name = 'r_name'
+    line_base='0.01 35.869565 25.363613 25.363613'
     unit_weight = '0 0 0'
     fluid_phase = 0
     use_mobility = true
@@ -320,20 +339,20 @@ injection_rate = 10 # kg/s
     type = PorousFlowPlotQuantity
     uo = J_out_uo
   []
-  [TK_out]
-    type = PointValue
-    variable = frac_T
-    point = '101.705 160.459 39.5722'
-  []
-  [P_out]
-    type = PointValue
-    variable = frac_P
-    point = '101.705 160.459 39.5722'
-  []
+  # [TK_out]
+  #   type = PointValue
+  #   variable = frac_T
+  #   point = 'Constant/num_21 Constant/num_31 Constant/num_41'
+  # []
+  # [P_out]
+  #   type = PointValue
+  #   variable = frac_P
+  #   point = 'Constant/num_21 Constant/num_31 Constant/num_41'
+  # []
   [P_in]
     type = PointValue
     variable = frac_P
-    point = '58.8124 0.50384 74.7838'
+    point = '0.0 0.0 0.0'
   []
 []
 
@@ -378,7 +397,7 @@ injection_rate = 10 # kg/s
 [Outputs]
   print_linear_residuals = false
   #file_base = 'amr/frac'
-  csv=false
+  csv=true
   exodus=False
   [matrix]
     type = Exodus
