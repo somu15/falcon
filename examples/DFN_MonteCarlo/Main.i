@@ -5,7 +5,7 @@
 [Samplers]
   [sample]
     type = TestMC
-    Radius = 76.9 # 50.0 # 
+    Radius = 76.9 # 50.0 #
     center_coords = '109.434882 82.635587 77.409223'
     unit_normal = '-0.308536 0.922122 -0.233444'
     execute_on = 'PRE_MULTIAPP_SETUP'
@@ -45,7 +45,7 @@
     type = SamplerData
     sampler = sample
     # execute_on = 'initial timestep_end'
-    parallel_type = DISTRIBUTED
+    # parallel_type = DISTRIBUTED
   []
 []
 
@@ -60,7 +60,7 @@
 
 [Executioner]
   type = Transient
-  num_steps = 1
+  num_steps = 10
 []
 
 [Outputs]
@@ -70,4 +70,5 @@
   execute_on = 'TIMESTEP_END'
   print_linear_converged_reason = false
   print_nonlinear_converged_reason = false
+  perf_graph = true
 []

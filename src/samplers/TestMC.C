@@ -37,7 +37,7 @@ TestMC::TestMC(const InputParameters & parameters)
   setNumberOfRows(1); // getParam<dof_id_type>("num_rows")
   setNumberOfCols(4);
 
-  _check_step = 0;
+  _check_step = 1000;
 
   _plane_const = _center_coords[0] * _unit_normal[0] + _center_coords[1] * _unit_normal[1] + _center_coords[2] * _unit_normal[2];
   Real tmp1 = std::sqrt((std::pow(_unit_normal[0], 2) + std::pow(_unit_normal[1], 2)));
@@ -98,7 +98,7 @@ TestMC::computeSample(dof_id_type /*row_index*/, dof_id_type col_index)
     _coords_req[1] = tmp[0];
     _coords_req[2] = tmp[1];
     _coords_req[3] = tmp[2];
-    std::cout << Moose::stringify(_coords_req) << std::endl;
+    std::cout << "Sent coors ***** " << Moose::stringify(_coords_req) << std::endl;
 
     // _coords_req[0] = 0.01;
     // _coords_req[1] = 146.122;

@@ -119,14 +119,22 @@ injection_rate = 10 # kg/s
 
 [Reporters]
   [Constant]
-    # type = ConstantReporter
-    # real_vector_names  = 'vec_2'
-    # # real_vector_values = '${coordinates11} ${coordinates21} ${coordinates31} ${coordinates41}'
-    # real_vector_values = '0.0 0.0 0.0 0.0'
     type = ConstantReporter
-    real_names  = 'num_11 num_21 num_31 num_41'
-    real_values = '0.01 101.705 160.459 39.5722'
+    # real_names  = 'num_11 num_21 num_31 num_41'
+    # real_values = '0.01 101.705 160.459 39.5722'
+    real_vector_names  = 'num_11 num_21 num_31 num_41'
+    real_vector_values = '0.01; 101.705; 160.459; 39.5722'
+    # execute_on = timestep_begin
   []
+  # [coords]
+  #   type=ClosestNodeProjector
+  #   xcoord_name = x
+  #   ycoord_name = y
+  #   zcoord_name = z
+  #   points = 'Constant/num_21 Constant/num_31 Constant/num_41'
+  #   values = 'Constant/num_11'
+  #   projection_tolerance = 1
+  # []
 []
 
 [AuxKernels]
@@ -207,11 +215,12 @@ injection_rate = 10 # kg/s
     bottom_p_or_t = 10.6 # 1MPa + approx insitu at production point, to prevent aperture closing due to low porepressures
     character = 1
     line_length = 1
-    radii_name = 'Constant/num_11'
+    weight_name = 'Constant/num_11'
     x_coord_name = 'Constant/num_21'
     y_coord_name = 'Constant/num_31'
     z_coord_name = 'Constant/num_41'
-    line_base='0.01 101.705 160.459 39.5722'
+    projection_tolerance = 10
+    # line_base='0.01 101.705 160.459 39.5722'
     unit_weight = '0 0 0'
     fluid_phase = 0
     use_mobility = true
@@ -223,14 +232,15 @@ injection_rate = 10 # kg/s
     bottom_p_or_t = 10.6 # 1MPa + approx insitu at production point, to prevent aperture closing due to low porepressures
     character = 1
     line_length = 1
-    radii_name = 'Constant/num_11'
+    weight_name = 'Constant/num_11'
     x_coord_name = 'Constant/num_21'
     y_coord_name = 'Constant/num_31'
     z_coord_name = 'Constant/num_41'
+    projection_tolerance = 10
     # output_value = Constant/vec_2
     # point_file = production.xyz
     # r_name = 'r_name'
-    line_base='0.01 101.705 160.459 39.5722'
+    # line_base='0.01 101.705 160.459 39.5722'
     unit_weight = '0 0 0'
     fluid_phase = 0
     use_mobility = true
@@ -397,7 +407,7 @@ injection_rate = 10 # kg/s
 [Outputs]
   print_linear_residuals = false
   #file_base = 'amr/frac'
-  csv=true
+  csv=False
   exodus=False
   [matrix]
     type = Exodus

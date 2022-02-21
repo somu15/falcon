@@ -10,7 +10,7 @@ coordinates4 = '${fparse z_req}'
 
 # 3D matrix app doing thermo-hydro PorousFlow and receiving heat energy via a VectorPostprocessor from the 2D fracture App
 intial_temperature=473
-endTime = 7.77e6 # 4 #  7200   # 3 Months (units in secs)
+endTime = 7.77e6 # 1 #        7200   # 3 Months (units in secs)
 [Mesh]
   uniform_refine = 0
   [generate]
@@ -122,10 +122,10 @@ endTime = 7.77e6 # 4 #  7200   # 3 Months (units in secs)
   []
   [Constant]
     type = ConstantReporter
-    real_names  = 'num_1 num_2 num_3 num_4'
-    real_values = '${coordinates1} ${coordinates2} ${coordinates3} ${coordinates4}'
-    # real_vector_names  = 'vec_1'
-    # real_vector_values = '${coordinates1} ${coordinates2} ${coordinates3} ${coordinates4}'
+    # real_names  = 'num_1 num_2 num_3 num_4'
+    # real_values = '${coordinates1} ${coordinates2} ${coordinates3} ${coordinates4}'
+    real_vector_names  = 'num_1 num_2 num_3 num_4'
+    real_vector_values = '${coordinates1}; ${coordinates2}; ${coordinates3}; ${coordinates4}'
   []
   [Jout_Constant]
     type = ConstantReporter
@@ -262,27 +262,27 @@ endTime = 7.77e6 # 4 #  7200   # 3 Months (units in secs)
   []
 []
 
-# [Adaptivity]
-#   marker = points
-#   max_h_level = 1 # 2
-#   stop_time = 10
-#   [Markers]
-#     [points]
-#       type = ReporterPointMarker
-#       x_coord_name = heat_transfer_rate/x
-#       y_coord_name = heat_transfer_rate/y
-#       z_coord_name = heat_transfer_rate/z
-#       inside = refine
-#       empty = do_nothing
-#     []
-#   []
-# []
+[Adaptivity]
+  marker = points
+  max_h_level = 1 # 2
+  stop_time = 10
+  [Markers]
+    [points]
+      type = ReporterPointMarker
+      x_coord_name = heat_transfer_rate/x
+      y_coord_name = heat_transfer_rate/y
+      z_coord_name = heat_transfer_rate/z
+      inside = refine
+      empty = do_nothing
+    []
+  []
+[]
 
 #this is suppressing some output and
 [Outputs]
   print_linear_residuals = false
   #file_base = 'amr2/matrix'
-  csv=True
+  csv=False
   exodus=False
   [matrix]
     type = Exodus
