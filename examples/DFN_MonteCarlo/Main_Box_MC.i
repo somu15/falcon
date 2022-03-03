@@ -2,14 +2,35 @@
   auto_create_executioner = false
 []
 
+[Distributions]
+  [value]
+    type = Normal
+    mean = 0.01
+    standard_deviation = 1e-8
+  []
+  [xcoord]
+    type = Uniform
+    lower_bound = -9
+    upper_bound = 209
+  []
+  [ycoord]
+    type = Uniform
+    lower_bound = -9
+    upper_bound = 159
+  []
+  [zcoord]
+    type = Uniform
+    lower_bound = -9
+    upper_bound = 209
+  []
+[]
+
 [Samplers]
   [sample]
-    type = TestMC
-    Radius = 76.9 # 50.0 #
-    center_coords = '109.434882 82.635587 77.409223'
-    unit_normal = '-0.308536 0.922122 -0.233444'
+    type = MonteCarlo
+    num_rows = 1000
+    distributions = 'value xcoord ycoord zcoord'
     execute_on = 'PRE_MULTIAPP_SETUP'
-    seed = 1012
   []
 []
 
@@ -59,8 +80,8 @@
 []
 
 [Executioner]
-  type = Transient
-  num_steps = 2
+  type = Steady
+  # num_steps = 2
 []
 
 [Outputs]
