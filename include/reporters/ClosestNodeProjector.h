@@ -9,23 +9,19 @@
 
 #pragma once
 
-#include "GeneralReporter.h"
+#include "ClosestNode.h"
 
-class ClosestNodeProjector : public GeneralReporter
+class ClosestNodeProjector : public ClosestNode
 {
 public:
   static InputParameters validParams();
 
   ClosestNodeProjector(const InputParameters & parameters);
 
-  virtual void initialize() override {}
-  virtual void execute() override;
-  virtual void finalize() override {}
+  virtual void execute() override {}
+  virtual void initialize() override;
 
 protected:
-  std::vector<Real> & _xcoord;
-  std::vector<Real> & _ycoord;
-  std::vector<Real> & _zcoord;
-  const std::vector<Real> & _values;
-  const Real _tolerance;
+  const std::vector<Real> & _point_value;
+  std::vector<Real> & _node_value;
 };
