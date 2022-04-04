@@ -1,28 +1,11 @@
 # Cold water injection into one side of the fracture network, and production from the other side
 injection_rate = 10 # kg/s
-#
-# value1 = 0.0
-# x_req1 = 0.0
-# y_req1 = 0.0
-# z_req1 = 0.0
-#
-# coordinates11 = '${fparse value1}'
-# coordinates21 = '${fparse x_req1}'
-# coordinates31 = '${fparse y_req1}'
-# coordinates41 = '${fparse z_req1}'
 
 [Mesh]
   uniform_refine = 0
   [cluster34]
     type = FileMeshGenerator
     file = 'Cluster_34.exo'
-  []
-  [injection_node]
-    type = BoundingBoxNodeSetGenerator
-    input = cluster34
-    bottom_left = '-1000 0 -1000'
-    top_right = '1000 0.504 1000'
-    new_boundary = injection_node
   []
 []
 
@@ -115,26 +98,10 @@ injection_rate = 10 # kg/s
   []
   [insitu_pp]
   []
-[]
-
-[Reporters]
-  [Constant]
-    type = ConstantReporter
-    # real_names  = 'num_11 num_21 num_31 num_41'
-    # real_values = '0.01 101.705 160.459 39.5722'
-    real_vector_names  = 'num_11 num_21 num_31 num_41'
-    real_vector_values = '0.01; 101.705; 160.459; 39.5722'
-    # execute_on = timestep_begin
+  [frac_P_Pa]
+    family = LAGRANGE
+    order = FIRST
   []
-  # [coords]
-  #   type=ClosestNodeProjector
-  #   xcoord_name = x
-  #   ycoord_name = y
-  #   zcoord_name = z
-  #   points = 'Constant/num_21 Constant/num_31 Constant/num_41'
-  #   values = 'Constant/num_11'
-  #   projection_tolerance = 1
-  # []
 []
 
 [AuxKernels]
@@ -160,6 +127,14 @@ injection_rate = 10 # kg/s
     constant_names = h_s
     constant_expressions = 1E3 # should be much bigger than thermal_conductivity / L ~ 1
     function = 'if(enclosing_element_normal_length = 0, 0, h_s * enclosing_element_normal_thermal_cond * 2 * enclosing_element_normal_length / (h_s * enclosing_element_normal_length * enclosing_element_normal_length + enclosing_element_normal_thermal_cond * 2 * enclosing_element_normal_length))'
+  []
+  [frac_P_Pa]
+    type = ParsedAux
+    variable = frac_P_Pa
+    args = frac_P
+    constant_names = MPa_to_Pa
+    constant_expressions = 1E6
+    function = 'frac_P*MPa_to_Pa'
   []
   [aperture]
     type = PorousFlowPropertyAux
@@ -193,34 +168,121 @@ injection_rate = 10 # kg/s
   []
 []
 
-[BCs]
-  [inject_heat]
-    type = DirichletBC
-    boundary = injection_node
-    variable = frac_T
-    value = 373
+[Reporters]
+  [inject_pt]
+    type=ConstantReporter
+    real_vector_names = 'pt_x pt_y pt_z'
+    real_vector_values = '58.8124; 0.50384; 74.7838'# '${x_in}; ${y_in}; ${z_in}'
+  []
+  [inject_node]
+    type=ClosestNode
+    point_x = inject_pt/pt_x
+    point_y = inject_pt/pt_y
+    point_z = inject_pt/pt_z
+    projection_tolerance = 1000
+    outputs = none
+    execute_on = TIMESTEP_BEGIN
+  []
+  [TK_in]
+    type=ClosestNodeData
+    variable=frac_T
+    point_x = inject_pt/pt_x
+    point_y = inject_pt/pt_y
+    point_z = inject_pt/pt_z
+    projection_tolerance = 1000
+    outputs = none
+    execute_on = TIMESTEP_BEGIN
+  []
+  [P_in]
+    type=ClosestNodeData
+    variable=frac_P
+    point_x = inject_pt/pt_x
+    point_y = inject_pt/pt_y
+    point_z = inject_pt/pt_z
+    projection_tolerance = 1000
+    outputs = none
+    execute_on = TIMESTEP_BEGIN
+  []
+  [var_in]
+    type = AccumulateReporter
+    reporters = 'TK_in/node_x TK_in/node_y TK_in/node_z TK_in/frac_T P_in/frac_P' # TK_in/node_id
+    outputs = var_in
+  []
+
+  [prod_pt]
+    type=ConstantReporter
+    real_vector_names = 'pt_val pt_x pt_y pt_z'
+    real_vector_values = '0.01; 0.0; 0.0; 0.0' # '0.01; ${x_out}; ${y_out}; ${z_out}'
+  []
+  [prod_node]
+    #production.xyz
+    type=ClosestNodeProjector
+    point_value =  prod_pt/pt_val
+    point_x = prod_pt/pt_x
+    point_y = prod_pt/pt_y
+    point_z = prod_pt/pt_z
+    projection_tolerance = 1000
+    outputs = none
+    execute_on = TIMESTEP_BEGIN
+  []
+
+  [TK_out]
+    type=ClosestNodeData
+    variable=frac_T
+    point_x = prod_pt/pt_x
+    point_y = prod_pt/pt_y
+    point_z = prod_pt/pt_z
+    projection_tolerance = 1000
+    outputs = none
+    execute_on = TIMESTEP_BEGIN
+  []
+  [P_out]
+    type=ClosestNodeData
+    variable=frac_P
+    point_x = prod_pt/pt_x
+    point_y = prod_pt/pt_y
+    point_z = prod_pt/pt_z
+    projection_tolerance = 1000
+    outputs = none
+    execute_on = TIMESTEP_BEGIN
+  []
+  [var_out]
+    type = AccumulateReporter
+    reporters = 'TK_out/node_x TK_out/node_y TK_out/node_z TK_out/frac_T P_out/frac_P' # TK_out/node_id
+    outputs = var_out
   []
 []
 
 [DiracKernels]
-  [inject_fluid]
-    type = PorousFlowPointSourceFromPostprocessor
-    mass_flux = ${injection_rate}
-    point = '58.8124 0.50384 74.7838'
+  [inject_fluid_mass]
+    type = PorousFlowReporterPointSourcePP
+    mass_flux = inject_mass_flux
+    x_coord_reporter = 'inject_node/node_x'
+    y_coord_reporter = 'inject_node/node_y'
+    z_coord_reporter = 'inject_node/node_z'
     variable = frac_P
+  []
+  [inject_fluid_h]
+    type = PorousFlowReporterPointEnthalpySourcePP
+    variable = frac_T
+    mass_flux = inject_mass_flux
+    x_coord_reporter = 'inject_node/node_x'
+    y_coord_reporter = 'inject_node/node_y'
+    z_coord_reporter = 'inject_node/node_z'
+    T_in = 'inject_T'
+    pressure = frac_P_Pa
+    fp = water
   []
   [withdraw_fluid]
     type = PorousFlowPeacemanBorehole
     SumQuantityUO = kg_out_uo
-    bottom_p_or_t = 10.6 # 1MPa + approx insitu at production point, to prevent aperture closing due to low porepressures
+    bottom_p_or_t = insitu_pp_borehole
     character = 1
     line_length = 1
-    weight_name = 'Constant/num_11'
-    x_coord_name = 'Constant/num_21'
-    y_coord_name = 'Constant/num_31'
-    z_coord_name = 'Constant/num_41'
-    projection_tolerance = 10000
-    # line_base='0.01 101.705 160.459 39.5722'
+    x_coord_reporter = 'prod_node/node_x'
+    y_coord_reporter = 'prod_node/node_y'
+    z_coord_reporter = 'prod_node/node_z'
+    weight_reporter = 'prod_node/node_value'
     unit_weight = '0 0 0'
     fluid_phase = 0
     use_mobility = true
@@ -229,18 +291,13 @@ injection_rate = 10 # kg/s
   [withdraw_heat]
     type = PorousFlowPeacemanBorehole
     SumQuantityUO = J_out_uo
-    bottom_p_or_t = 10.6 # 1MPa + approx insitu at production point, to prevent aperture closing due to low porepressures
+    bottom_p_or_t = insitu_pp_borehole
     character = 1
     line_length = 1
-    weight_name = 'Constant/num_11'
-    x_coord_name = 'Constant/num_21'
-    y_coord_name = 'Constant/num_31'
-    z_coord_name = 'Constant/num_41'
-    projection_tolerance = 10000
-    # output_value = Constant/vec_2
-    # point_file = production.xyz
-    # r_name = 'r_name'
-    # line_base='0.01 101.705 160.459 39.5722'
+    x_coord_reporter = 'prod_node/node_x'
+    y_coord_reporter = 'prod_node/node_y'
+    z_coord_reporter = 'prod_node/node_z'
+    weight_reporter = 'prod_node/node_value'
     unit_weight = '0 0 0'
     fluid_phase = 0
     use_mobility = true
@@ -312,9 +369,22 @@ injection_rate = 10 # kg/s
     type = ParsedFunction
     value = '10 - 0.847E-2 * z' # Approximate hydrostatic in MPa
   []
+  # approx insitu at production point, to prevent aperture closing due to low porepressures
+  [insitu_pp_borehole]
+    type = ParsedFunction
+    value = '10 - 0.847E-2 * z + 1' # Approximate hydrostatic in MPa + 1MPa
+  []
 []
 
 [Postprocessors]
+  [inject_T]
+    type = Receiver
+    default = '373'
+  []
+  [inject_mass_flux]
+    type = Receiver
+    default = ${injection_rate}
+  []
   [nl_its]
     type = NumNonlinearIterations
   []
@@ -349,21 +419,6 @@ injection_rate = 10 # kg/s
     type = PorousFlowPlotQuantity
     uo = J_out_uo
   []
-  [TK_out]
-    type = PointValue
-    variable = frac_T
-    point = '101.705 160.459 39.5722'
-  []
-  [P_out]
-    type = PointValue
-    variable = frac_P
-    point = '101.705 160.459 39.5722'
-  []
-  [P_in]
-    type = PointValue
-    variable = frac_P
-    point = '58.8124 0.50384 74.7838'
-  []
 []
 
 [VectorPostprocessors]
@@ -389,17 +444,26 @@ injection_rate = 10 # kg/s
   solve_type = NEWTON
   [TimeStepper]
     type = IterationAdaptiveDT
-    dt = 1
+    dt = 0.3
     growth_factor = 1.1
     optimal_iterations = 6
   []
+
+  # fixme Rob told me to try this.
+  # The system doesn't change much once it is pressurized so the residual can't change much either
+  steady_state_detection = true
+  steady_state_start_time = 7000  #this should start after the system has pressurized
+  steady_state_tolerance = 1e-5   #fixme should be smaller than nl_resid
+
+  dtmin = 1e-3
+  dtmax = 1000 #courant condition Peclet number (advection versus diffusion) limits dtmax
   end_time = 1e8
   line_search = 'none'
-  automatic_scaling = true
-  l_max_its = 60
+  automatic_scaling = false
+  l_max_its = 20
   l_tol = 8e-3
   nl_forced_its = 1
-  nl_max_its = 40
+  nl_max_its = 20
   nl_rel_tol = 5e-05
   nl_abs_tol = 1e-10
 []
@@ -407,7 +471,7 @@ injection_rate = 10 # kg/s
 [Outputs]
   print_linear_residuals = false
   #file_base = 'amr/frac'
-  csv=False
+  csv=false
   exodus=False
   [matrix]
     type = Exodus
@@ -424,4 +488,16 @@ injection_rate = 10 # kg/s
     2700000 2800000 2900000 3e6 1e7 1e8'
     sync_only = true
   []
+  # [var_in]
+  #   type = JSON
+  #   execute_system_information_on = none
+  #   execute_on = 'FINAL'
+  #   #file_base = 'var_in'
+  # []
+  # [var_out]
+  #   type = JSON
+  #   execute_system_information_on = none
+  #   execute_on = 'FINAL'
+  #   #file_base = 'var_out'
+  # []
 []

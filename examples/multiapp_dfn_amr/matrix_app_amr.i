@@ -1,6 +1,6 @@
 # 3D matrix app doing thermo-hydro PorousFlow and receiving heat energy via a VectorPostprocessor from the 2D fracture App
 intial_temperature=473
-endTime = 3 #1e8
+endTime = 2.592e6 #1e8
 [Mesh]
   uniform_refine = 0
   [generate]
@@ -298,6 +298,7 @@ endTime = 3 #1e8
 
 #this is suppressing some output
 [Outputs]
+  perf_graph = true
   print_linear_residuals = false
   exodus=False
   csv = true

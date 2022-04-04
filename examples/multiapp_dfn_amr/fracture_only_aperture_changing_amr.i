@@ -5,9 +5,9 @@ x_in=58.8124
 y_in=0.50384
 z_in=74.7838
 #production coordinates
-x_out=101.705
-y_out=160.459
-z_out=39.5722
+x_out=0.0 # 101.705
+y_out=0.0 # 160.459
+z_out=0.0 # 39.5722
 
 [Mesh]
   uniform_refine = 0
@@ -210,7 +210,7 @@ z_out=39.5722
   []
   [var_in]
     type = AccumulateReporter
-    reporters = 'TK_in/node_id TK_in/node_x TK_in/node_y TK_in/node_z TK_in/frac_T P_in/frac_P'
+    reporters = 'TK_in/node_x TK_in/node_y TK_in/node_z TK_in/frac_T P_in/frac_P' # TK_in/node_id
     outputs = var_in
   []
 
@@ -250,7 +250,7 @@ z_out=39.5722
   []
   [var_out]
     type = AccumulateReporter
-    reporters = 'TK_out/node_id TK_out/node_x TK_out/node_y TK_out/node_z TK_out/frac_T P_out/frac_P'
+    reporters = 'TK_out/node_x TK_out/node_y TK_out/node_z TK_out/frac_T P_out/frac_P' # TK_out/node_id
     outputs = var_out
   []
 []

@@ -6,7 +6,7 @@
   [value]
     type = Normal
     mean = 0.01
-    standard_deviation = 1e-8
+    standard_deviation = 1e-10
   []
   [xcoord]
     type = Uniform
@@ -28,7 +28,7 @@
 [Samplers]
   [sample]
     type = MonteCarlo
-    num_rows = 1000
+    num_rows = 100 # 500 # 1000
     distributions = 'value xcoord ycoord zcoord'
     execute_on = 'PRE_MULTIAPP_SETUP'
   []
@@ -39,7 +39,7 @@
     type = SamplerFullSolveMultiApp
     input_files = matrix_app_amr.i
     sampler = sample
-    mode = batch-reset
+    # mode = batch-reset
   []
 []
 
@@ -51,10 +51,46 @@
     stochastic_reporter = Jout_storage
     from_reporter = Jout_Constant/Jout_values
   []
+  [Node_x]
+    type = SamplerReporterTransfer
+    multi_app = sub
+    sampler = sample
+    stochastic_reporter = Node_x
+    from_reporter = Constant1/x1
+  []
+  [Node_y]
+    type = SamplerReporterTransfer
+    multi_app = sub
+    sampler = sample
+    stochastic_reporter = Node_y
+    from_reporter = Constant1/y1
+  []
+  [Node_z]
+    type = SamplerReporterTransfer
+    multi_app = sub
+    sampler = sample
+    stochastic_reporter = Node_z
+    from_reporter = Constant1/z1
+  []
 []
 
 [Reporters]
   [Jout_storage]
+    type = StochasticReporter
+    execute_on = 'timestep_end'
+    # parallel_type = ROOT
+  []
+  [Node_x]
+    type = StochasticReporter
+    execute_on = 'timestep_end'
+    # parallel_type = ROOT
+  []
+  [Node_y]
+    type = StochasticReporter
+    execute_on = 'timestep_end'
+    # parallel_type = ROOT
+  []
+  [Node_z]
     type = StochasticReporter
     execute_on = 'timestep_end'
     # parallel_type = ROOT
@@ -85,7 +121,7 @@
 []
 
 [Outputs]
-  csv = true
+  csv = false
   json = true
   exodus = false
   execute_on = 'TIMESTEP_END'
