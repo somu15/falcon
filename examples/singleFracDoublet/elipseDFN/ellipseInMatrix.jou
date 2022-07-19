@@ -1,0 +1,27 @@
+reset
+create surface ellipse major radius 90 minor radius 50 xplane
+brick x 40 y 140 z 220
+
+chop volume 2  with volume 1 
+merge surface 1 8 
+
+surface 1 scheme trimesh
+surface 1 size 2
+mesh surface 1
+
+volume 4  Scheme Tetmesh proximity layers off geometry approximation angle 15 
+volume 4  tetmesh growth_factor 1 
+Trimesher surface gradation 1.3
+Trimesher volume gradation 1.3
+volume 4 size 10 
+mesh volume 4
+
+
+block 1 add volume 4
+block 2 add surface 1
+#draw block all  #command to draw internal elements for viewing
+
+block 1 name "matrix"
+block 2 name "fracture"
+
+export mesh "/Users/mundlb/projects/falcon/examples/singleFracDoublet/elipseDFN/ellipseInMatrix.e" dimension 3 block all overwrite
